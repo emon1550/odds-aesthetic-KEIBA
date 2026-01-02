@@ -1,0 +1,37 @@
+name: JRA Odds Bot
+
+on:
+  schedule:
+    # JST 9:00 - 16:30 is UTC 0:00 - 7:30
+    # Run every 10 minutes: */10
+    - cron: '*/10 0-7 * * 0,6'
+  workflow_dispatch:
+
+jobs:
+  scrape-and-analyze:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip' # Enable builtin caching for pip
+
+    - name: Install dependencies
+      run: |
+        pip install -r backend/requirements.txt
+
+    - name: Run Scraper
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+        TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+        TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+        TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+      run: |
+        python backend/scraper.py
