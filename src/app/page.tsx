@@ -178,13 +178,55 @@ export default async function Home() {
     <main className="min-h-screen text-foreground bg-background pb-20">
 
       {/* Hero Section */}
-      <section className="pt-24 pb-12 px-6 text-center animate-in fade-in duration-1000">
+      <section className="pt-24 pb-8 px-6 text-center animate-in fade-in duration-1000">
         <h1 className="text-4xl sm:text-5xl font-serif font-medium tracking-tight mb-4 text-gray-900">
           Market Flow Analysis
         </h1>
-        <p className="text-xs sm:text-sm font-sans tracking-[0.2em] text-gray-500 uppercase">
+        <p className="text-xs sm:text-sm font-sans tracking-[0.2em] text-gray-500 uppercase mb-8">
           Static Observation of Dynamic Odds
         </p>
+      </section>
+
+      {/* Concept & Guide Section */}
+      <section className="max-w-xl mx-auto px-6 mb-12 animate-in slide-in-from-bottom-4 duration-1000 delay-300">
+        <div className="bg-white/50 backdrop-blur-sm border border-gray-100 p-6 sm:p-8 shadow-sm rounded-sm">
+          <h2 className="text-center font-serif text-lg text-gray-800 mb-6 tracking-widest">
+            - 哲学と使用法 -
+          </h2>
+
+          <div className="space-y-6 text-sm text-gray-600 font-sans leading-relaxed">
+            <div>
+              <h3 className="font-bold text-gray-900 mb-1 inline-block border-b border-primary/30 pb-0.5">What is this?</h3>
+              <p className="mt-1">
+                JRA全レースのオッズを「ラスト5分」までリアルタイム監視し、
+                単勝オッズが20%以上急落した瞬間（＝大口投票/スマートマネーの流入）を検知･記録するシステムです。
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-gray-900 mb-1 inline-block border-b border-primary/30 pb-0.5">How to use</h3>
+              <ul className="list-disc list-outside pl-4 space-y-1 mt-1">
+                <li>
+                  <span className="font-medium text-emerald-700">Emerald Bar</span>:
+                  異常検知された馬には左側に緑色のバーが表示されます。
+                </li>
+                <li>
+                  <span className="font-medium text-emerald-700">Sparkline</span>:
+                  オッズがいつ、どのように落ちたかの推移をチャートで確認できます。
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-gray-900 mb-1 inline-block border-b border-primary/30 pb-0.5">Why it matters</h3>
+              <p className="mt-1">
+                締め切り直前の不可解なオッズ低下は、一般ファンが意識していない
+                「確信度の高い情報」や「AIのシステム買い」を示唆する場合が多く、
+                穴馬発見の強力なシグナルとなります。
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Analysis Timeline */}
