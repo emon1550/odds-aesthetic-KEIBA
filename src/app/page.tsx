@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import RaceCard from '@/components/RaceCard';
 
 // --- Types ---
 type AnalysisData = {
@@ -127,49 +128,7 @@ async function getAnalysisData(): Promise<AnalysisData[]> {
 }
 
 // Minimal Sparkline Component
-function Sparkline({ data }: { data: { time: string; odds: number }[] }) {
-  if (!data || data.length < 2) return null;
 
-  const height = 40;
-  const width = 120;
-  const maxOdds = Math.max(...data.map(d => d.odds));
-  const minOdds = Math.min(...data.map(d => d.odds));
-  const range = maxOdds - minOdds || 1;
-
-  // Normalize points
-  const points = data.map((d, i) => {
-    const x = (i / (data.length - 1)) * width;
-    // Invert Y because lower odds is 'better' or just standard chart (higher Y = higher Val)
-    // Usually charts: Higher Y = Higher Value (Top).
-    // Let's draw standard: Higher Odds at Top.
-    const y = height - ((d.odds - minOdds) / range) * height;
-    return `${x},${y}`;
-  }).join(' ');
-
-  return (
-    <div className="flex flex-col items-end">
-      <svg width={width} height={height} className="overflow-visible">
-        {/* Line */}
-        <polyline
-          points={points}
-          fill="none"
-          stroke="#065F46"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="opacity-80"
-        />
-        {/* End Dot */}
-        <circle
-          cx={width}
-          cy={height - ((data[data.length - 1].odds - minOdds) / range) * height}
-          r="2.5"
-          fill="#065F46"
-        />
-      </svg>
-    </div>
-  );
-}
 
 export default async function Home() {
   const alerts = await getAnalysisData();
@@ -212,7 +171,7 @@ export default async function Home() {
               <ul className="list-disc list-outside pl-4 space-y-1 mt-1">
                 <li>
                   <span className="font-medium text-emerald-700">エメラルド・インジケーター</span>:
-                  異常検知された馬には左側に緑色のバーが表示されます。
+                  異常検知された馬には左側に緑色のバーが表示されます。カードをクリックすると全馬の詳細が見れます。
                 </li>
                 <li>
                   <span className="font-medium text-emerald-700">推移チャート</span>:
@@ -244,63 +203,8 @@ export default async function Home() {
           </span>
         </div>
 
-        {alerts.map((alert, index) => (
-          <div
-            key={alert.id}
-            className="group relative bg-white border border-gray-100 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-md transition-all duration-500 ease-out overflow-hidden"
-            style={{ animationDelay: `${index * 150}ms` }}
-          >
-            {/* Whale Indicator: Emerald Bar */}
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary group-hover:w-1.5 transition-all duration-300" />
-
-            <div className="p-5 pl-7">
-              {/* Header: Metadata */}
-              <div className="flex items-baseline justify-between mb-3 text-gray-500 font-sans">
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <span className="px-1.5 py-0.5 bg-gray-50 text-gray-600 rounded text-xs border border-gray-200">
-                    {alert.location} {alert.race_number}R
-                  </span>
-                  <span>{alert.race_name}</span>
-                </div>
-                <time className="text-[10px] sm:text-xs opacity-60 font-mono">
-                  {new Date(alert.detected_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
-                </time>
-              </div>
-
-              {/* Body: Core Info */}
-              <div className="flex items-end justify-between">
-                <div>
-                  <div className="text-xs text-gray-400 mb-0.5">{alert.horse_number}番</div>
-                  <div className="text-xl sm:text-2xl font-bold text-gray-800 font-serif leading-none tracking-tight">
-                    {alert.horse_name}
-                  </div>
-                </div>
-
-                {/* Odds Change */}
-                <div className="text-right">
-                  <div className="flex flex-col items-end gap-1">
-                    {/* Chart */}
-                    <div className="mb-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                      {alert.history && <Sparkline data={alert.history} />}
-                    </div>
-
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm text-gray-400 line-through decoration-gray-300 decoration-1">
-                        {alert.previous_odds.toFixed(1)}
-                      </span>
-                      <span className="text-gray-300 text-sm">→</span>
-                      <span className="text-2xl font-bold text-primary tabular-nums">
-                        {alert.current_odds.toFixed(1)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Design Element: Subtle Noise/Texture Overlay could go here if needed */}
-          </div>
+        {alerts.map((alert) => (
+          <RaceCard key={alert.id} alert={alert} />
         ))}
 
         {/* Empty State */}
