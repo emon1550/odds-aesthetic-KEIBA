@@ -179,11 +179,11 @@ export default async function Home() {
 
       {/* Hero Section */}
       <section className="pt-24 pb-8 px-6 text-center animate-in fade-in duration-1000">
-        <h1 className="text-4xl sm:text-5xl font-serif font-medium tracking-tight mb-4 text-gray-900">
-          Market Flow Analysis
+        <h1 className="text-3xl sm:text-4xl font-serif font-medium tracking-tight mb-3 text-gray-900">
+          市場資金流動分析
         </h1>
-        <p className="text-xs sm:text-sm font-sans tracking-[0.2em] text-gray-500 uppercase mb-8">
-          Static Observation of Dynamic Odds
+        <p className="text-[10px] sm:text-xs font-sans tracking-[0.2em] text-gray-400 uppercase mb-8">
+          Market Flow Analysis
         </p>
       </section>
 
@@ -196,7 +196,9 @@ export default async function Home() {
 
           <div className="space-y-6 text-sm text-gray-600 font-sans leading-relaxed">
             <div>
-              <h3 className="font-bold text-gray-900 mb-1 inline-block border-b border-primary/30 pb-0.5">What is this?</h3>
+              <h3 className="font-bold text-gray-900 mb-1 inline-block border-b border-primary/30 pb-0.5">
+                コンセプト
+              </h3>
               <p className="mt-1">
                 JRA全レースのオッズを「ラスト5分」までリアルタイム監視し、
                 単勝オッズが20%以上急落した瞬間（＝大口投票/スマートマネーの流入）を検知･記録するシステムです。
@@ -204,21 +206,25 @@ export default async function Home() {
             </div>
 
             <div>
-              <h3 className="font-bold text-gray-900 mb-1 inline-block border-b border-primary/30 pb-0.5">How to use</h3>
+              <h3 className="font-bold text-gray-900 mb-1 inline-block border-b border-primary/30 pb-0.5">
+                見方・使い方
+              </h3>
               <ul className="list-disc list-outside pl-4 space-y-1 mt-1">
                 <li>
-                  <span className="font-medium text-emerald-700">Emerald Bar</span>:
+                  <span className="font-medium text-emerald-700">エメラルド・インジケーター</span>:
                   異常検知された馬には左側に緑色のバーが表示されます。
                 </li>
                 <li>
-                  <span className="font-medium text-emerald-700">Sparkline</span>:
+                  <span className="font-medium text-emerald-700">推移チャート</span>:
                   オッズがいつ、どのように落ちたかの推移をチャートで確認できます。
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-bold text-gray-900 mb-1 inline-block border-b border-primary/30 pb-0.5">Why it matters</h3>
+              <h3 className="font-bold text-gray-900 mb-1 inline-block border-b border-primary/30 pb-0.5">
+                なぜ重要か
+              </h3>
               <p className="mt-1">
                 締め切り直前の不可解なオッズ低下は、一般ファンが意識していない
                 「確信度の高い情報」や「AIのシステム買い」を示唆する場合が多く、
@@ -234,7 +240,7 @@ export default async function Home() {
         <div className="flex items-center justify-between px-2 mb-8">
           <span className="text-xs text-gray-400 font-mono">{new Date().toLocaleDateString('ja-JP')}</span>
           <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-0.5 rounded-full">
-            System Active
+            システム稼働中
           </span>
         </div>
 
@@ -264,7 +270,7 @@ export default async function Home() {
               {/* Body: Core Info */}
               <div className="flex items-end justify-between">
                 <div>
-                  <div className="text-xs text-gray-400 mb-0.5">#{alert.horse_number}</div>
+                  <div className="text-xs text-gray-400 mb-0.5">{alert.horse_number}番</div>
                   <div className="text-xl sm:text-2xl font-bold text-gray-800 font-serif leading-none tracking-tight">
                     {alert.horse_name}
                   </div>
@@ -300,7 +306,7 @@ export default async function Home() {
         {/* Empty State */}
         {alerts.length === 0 && (
           <div className="text-center py-20 opacity-50 font-serif">
-            <p>No significant flow detected yet.</p>
+            <p>現在、特異な資金流入は検知されていません。</p>
           </div>
         )}
 
