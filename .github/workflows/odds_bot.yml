@@ -3,8 +3,8 @@ name: JRA Odds Bot
 on:
   schedule:
     # JST 9:00 - 16:30 is UTC 0:00 - 7:30
-    # Run every 10 minutes: */10
-    - cron: '*/10 0-7 * * 0,6'
+    # Run every 5 minutes: */5 to support Smart Polling
+    - cron: '*/5 0-7 * * 0,6'
   workflow_dispatch:
 
 jobs:

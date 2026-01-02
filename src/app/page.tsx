@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 // --- Types ---
 type AnalysisData = {
   id: string;
+  race_id: string; // Needed for history fetch
   race_name: string;
   race_number: number;
   location: string;
@@ -12,12 +13,14 @@ type AnalysisData = {
   current_odds: number;
   drop_rate: number;
   detected_at: string;
+  history?: { time: string; odds: number }[]; // For Chart
 };
 
 // --- Mock Data (Fallback) ---
 const MOCK_DATA: AnalysisData[] = [
   {
     id: '1',
+    race_id: 'mock1',
     race_name: 'あずさ賞',
     race_number: 9,
     location: '京都',
@@ -27,9 +30,16 @@ const MOCK_DATA: AnalysisData[] = [
     current_odds: 9.4,
     drop_rate: 0.21,
     detected_at: new Date().toISOString(),
+    history: [
+      { time: '10:00', odds: 13.5 },
+      { time: '10:05', odds: 12.0 },
+      { time: '10:10', odds: 11.2 },
+      { time: '10:15', odds: 9.4 },
+    ]
   },
   {
     id: '2',
+    race_id: 'mock2',
     race_name: 'ヴィクトリアマイル(G1)',
     race_number: 11,
     location: '東京',
@@ -39,6 +49,12 @@ const MOCK_DATA: AnalysisData[] = [
     current_odds: 5.2,
     drop_rate: 0.38,
     detected_at: new Date().toISOString(),
+    history: [
+      { time: '14:30', odds: 9.0 },
+      { time: '14:40', odds: 8.5 },
+      { time: '14:45', odds: 7.0 },
+      { time: '14:50', odds: 5.2 },
+    ]
   },
 ];
 
@@ -54,12 +70,13 @@ const supabase = (supabaseUrl && supabaseKey)
 async function getAnalysisData(): Promise<AnalysisData[]> {
   if (!supabase) return MOCK_DATA;
 
-  // Actual fetch logic matching the schema
-  const { data, error } = await supabase
+  // 1. Fetch Alerts
+  const { data: alerts, error } = await supabase
     .from('odds_analysis')
     .select(`
       *,
       races (
+        id,
         race_name,
         race_number,
         location
@@ -68,24 +85,90 @@ async function getAnalysisData(): Promise<AnalysisData[]> {
     .order('detected_at', { ascending: false })
     .limit(20);
 
-  if (error || !data || data.length === 0) {
+  if (error || !alerts || alerts.length === 0) {
     console.log('Supabase fetch failed or empty, using mock data.');
     return MOCK_DATA;
   }
 
-  // Flatten the structure for the UI
-  return data.map((item: any) => ({
-    id: item.id,
-    race_name: item.races?.race_name || 'Race',
-    race_number: item.races?.race_number || 0,
-    location: item.races?.location || 'JRA',
-    horse_name: item.horse_name,
-    horse_number: item.horse_number,
-    previous_odds: item.previous_odds,
-    current_odds: item.current_odds,
-    drop_rate: item.drop_rate,
-    detected_at: item.detected_at,
+  // 2. Fetch History for each alert (Parallel)
+  const populatedData = await Promise.all(alerts.map(async (item: any) => {
+    // Fetch snapshots for this horse/race
+    // Limit to last 10 points for cleanliness
+    const { data: hist } = await supabase
+      .from('odds_snapshots')
+      .select('odds, fetched_at')
+      .eq('race_id', item.races?.id)
+      .eq('horse_number', item.horse_number)
+      .order('fetched_at', { ascending: true })
+      .limit(20); // Get recent points
+
+    const history = hist?.map((h: any) => ({
+      time: new Date(h.fetched_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+      odds: h.odds
+    })) || [];
+
+    return {
+      id: item.id,
+      race_id: item.races?.id,
+      race_name: item.races?.race_name || 'Race',
+      race_number: item.races?.race_number || 0,
+      location: item.races?.location || 'JRA',
+      horse_name: item.horse_name,
+      horse_number: item.horse_number,
+      previous_odds: item.previous_odds,
+      current_odds: item.current_odds,
+      drop_rate: item.drop_rate,
+      detected_at: item.detected_at,
+      history: history
+    };
   }));
+
+  return populatedData;
+}
+
+// Minimal Sparkline Component
+function Sparkline({ data }: { data: { time: string; odds: number }[] }) {
+  if (!data || data.length < 2) return null;
+
+  const height = 40;
+  const width = 120;
+  const maxOdds = Math.max(...data.map(d => d.odds));
+  const minOdds = Math.min(...data.map(d => d.odds));
+  const range = maxOdds - minOdds || 1;
+
+  // Normalize points
+  const points = data.map((d, i) => {
+    const x = (i / (data.length - 1)) * width;
+    // Invert Y because lower odds is 'better' or just standard chart (higher Y = higher Val)
+    // Usually charts: Higher Y = Higher Value (Top).
+    // Let's draw standard: Higher Odds at Top.
+    const y = height - ((d.odds - minOdds) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <div className="flex flex-col items-end">
+      <svg width={width} height={height} className="overflow-visible">
+        {/* Line */}
+        <polyline
+          points={points}
+          fill="none"
+          stroke="#065F46"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="opacity-80"
+        />
+        {/* End Dot */}
+        <circle
+          cx={width}
+          cy={height - ((data[data.length - 1].odds - minOdds) / range) * height}
+          r="2.5"
+          fill="#065F46"
+        />
+      </svg>
+    </div>
+  );
 }
 
 export default async function Home() {
@@ -147,15 +230,21 @@ export default async function Home() {
 
                 {/* Odds Change */}
                 <div className="text-right">
-                  <div className="text-xs text-gray-400 mb-1">Odds Flow</div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-sm text-gray-400 line-through decoration-gray-300 decoration-1">
-                      {alert.previous_odds.toFixed(1)}
-                    </span>
-                    <span className="text-gray-300 text-sm">→</span>
-                    <span className="text-2xl font-bold text-primary tabular-nums">
-                      {alert.current_odds.toFixed(1)}
-                    </span>
+                  <div className="flex flex-col items-end gap-1">
+                    {/* Chart */}
+                    <div className="mb-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                      {alert.history && <Sparkline data={alert.history} />}
+                    </div>
+
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm text-gray-400 line-through decoration-gray-300 decoration-1">
+                        {alert.previous_odds.toFixed(1)}
+                      </span>
+                      <span className="text-gray-300 text-sm">→</span>
+                      <span className="text-2xl font-bold text-primary tabular-nums">
+                        {alert.current_odds.toFixed(1)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
