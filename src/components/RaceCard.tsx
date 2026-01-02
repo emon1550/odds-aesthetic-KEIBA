@@ -122,6 +122,9 @@ export default function RaceCard({ alert }: { alert: any }) {
                                 <span className="text-2xl font-bold text-primary tabular-nums">
                                     {alert.current_odds.toFixed(1)}
                                 </span>
+                                <span className="ml-2 px-1.5 py-0.5 bg-red-50 text-red-600 text-xs font-bold rounded border border-red-100 tabular-nums">
+                                    {(alert.drop_rate * 100).toFixed(0)}% DOWN
+                                </span>
                             </div>
                         </div>
                     </div>
