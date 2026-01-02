@@ -204,6 +204,15 @@ def main():
             href = link.get("href")
             rid = href.split("race_id=")[1].split("&")[0]
             
+            # Filter: Exclude Jump Races (障害レース)
+            # Netkeiba usually has .RaceData01 with text like "芝1600m" or "障3000m"
+            race_data_node = item.select_one(".RaceData01")
+            if race_data_node:
+                r_txt = race_data_node.get_text(strip=True)
+                if "障" in r_txt:
+                    # print(f"Skipping Jump Race: {rid}")
+                    continue
+
             # Extract Time (e.g., "10:30")
             time_elem = item.select_one(".RaceTime")
             if not time_elem: continue
